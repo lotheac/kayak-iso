@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2012 OmniTI Computer Consulting, Inc.  All rights reserved.
+# Copyright 2017 OmniTI Computer Consulting, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 LOG_SETUP=0
@@ -100,18 +100,19 @@ ForceDHCP(){
 }
 
 BuildBE() {
+  RPOOL=${1:-rpool}
   BOOTSRVA=`/sbin/dhcpinfo BootSrvA`
   MEDIA=`getvar install_media`
   MEDIA=`echo $MEDIA | sed -e "s%//\:%//$BOOTSRVA\:%g;"`
   MEDIA=`echo $MEDIA | sed -e "s%///%//$BOOTSRVA/%g;"`
-  zfs set compression=on rpool
-  zfs create rpool/ROOT
-  zfs set canmount=off rpool/ROOT
-  zfs set mountpoint=legacy rpool/ROOT
+  zfs set compression=on $RPOOL
+  zfs create $RPOOL/ROOT
+  zfs set canmount=off $RPOOL/ROOT
+  zfs set mountpoint=legacy $RPOOL/ROOT
   log "Receiving image: $MEDIA"
-  curl -s $MEDIA | pv -B 128m | bzip2 -dc | zfs receive -u rpool/ROOT/omnios
-  zfs set canmount=noauto rpool/ROOT/omnios
-  zfs set mountpoint=legacy rpool/ROOT/omnios
+  curl -s $MEDIA | pv -B 128m | bzip2 -dc | zfs receive -u $RPOOL/ROOT/omnios
+  zfs set canmount=noauto $RPOOL/ROOT/omnios
+  zfs set mountpoint=legacy $RPOOL/ROOT/omnios
   log "Cleaning up boot environment"
   beadm mount omnios /mnt
   ALTROOT=/mnt
@@ -122,7 +123,7 @@ BuildBE() {
   [[ -L $ALTROOT/dev/msglog ]] || \
     ln -s ../devices/pseudo/sysmsg@0:msglog $ALTROOT/dev/msglog
   MakeSwapDump
-  zfs destroy rpool/ROOT/omnios@kayak
+  zfs destroy $RPOOL/ROOT/omnios@kayak
 }
 
 FetchConfig(){
