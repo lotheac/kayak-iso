@@ -101,16 +101,27 @@ ForceDHCP(){
 
 BuildBE() {
   RPOOL=${1:-rpool}
-  BOOTSRVA=`/sbin/dhcpinfo BootSrvA`
-  MEDIA=`getvar install_media`
-  MEDIA=`echo $MEDIA | sed -e "s%//\:%//$BOOTSRVA\:%g;"`
-  MEDIA=`echo $MEDIA | sed -e "s%///%//$BOOTSRVA/%g;"`
+  if [[ -z $2 ]]; then
+      BOOTSRVA=`/sbin/dhcpinfo BootSrvA`
+      MEDIA=`getvar install_media`
+      MEDIA=`echo $MEDIA | sed -e "s%//\:%//$BOOTSRVA\:%g;"`
+      MEDIA=`echo $MEDIA | sed -e "s%///%//$BOOTSRVA/%g;"`
+      DECOMP="bzip2 -dc"
+      GRAB="curl -s"
+  else
+      # ASSUME $2 is a file path.
+      MEDIA=$2
+      # XXX KEBE SAYS, make switch statement based on $MEDIA's extension.
+      # e.g. "bz2" ==> "bzip -dc", "7z" ==> 
+      DECOMP="bzip2 -dc"
+      GRAB=cat
+  fi
   zfs set compression=on $RPOOL
   zfs create $RPOOL/ROOT
   zfs set canmount=off $RPOOL/ROOT
   zfs set mountpoint=legacy $RPOOL/ROOT
   log "Receiving image: $MEDIA"
-  curl -s $MEDIA | pv -B 128m | bzip2 -dc | zfs receive -u $RPOOL/ROOT/omnios
+  $GRAB $MEDIA | pv -B 128m | $DECOMP | zfs receive -u $RPOOL/ROOT/omnios
   zfs set canmount=noauto $RPOOL/ROOT/omnios
   zfs set mountpoint=legacy $RPOOL/ROOT/omnios
   log "Cleaning up boot environment"
@@ -150,16 +161,25 @@ FetchConfig(){
 }
 
 MakeBootable(){
+  RPOOL=${1:-rpool}
   log "Making boot environment bootable"
-  zpool set bootfs=rpool/ROOT/omnios rpool
+  zpool set bootfs=$RPOOL/ROOT/omnios rpool
   # Must do beadm activate first on the off chance we're bootstrapping from
   # GRUB.
   beadm activate omnios
 
+  if [[ ! -z $1 ]]; then
+      # Generate kayak-disk-list from zpool status.
+      # NOTE: If this is something on non-s0 slices, the installboot below
+      # will fail most likely, which is possibly a desired result.
+      zpool list -v $RPOOL | egrep -v "NAME|rpool|mirror" | \
+	  awk '{print $1}' | sed -E 's/s0$//g' > /tmp/kayak-disk-list
+  fi
+
   # NOTE:  This installboot loop assumes we're doing GPT whole-disk rpools.
   for i in `cat /tmp/kayak-disk-list`
   do
-    installboot -mf /boot/pmbr /boot/gptzfsboot /dev/rdsk/${i}s0
+      installboot -mf /boot/pmbr /boot/gptzfsboot /dev/rdsk/${i}s0
   done
 
   bootadm update-archive -R $ALTROOT
@@ -200,6 +220,21 @@ ApplyChanges(){
     ln -s generic_limited_net.xml $ALTROOT/etc/svc/profile/generic.xml
   [[ -L $ALTROOT/etc/svc/profile/name_service.xml ]] || \
     ln -s ns_dns.xml $ALTROOT/etc/svc/profile/name_service.xml
+
+  # Extras from interactive ISO/USB install...
+  # arg1 == hostname
+  if [[ ! -z $1 ]]; then
+      SetHostname $1
+  fi
+
+  # arg2 == timezone
+  if [[ ! -z $2 ]]; then
+      SetTimezone $2
+  fi
+
+  # arg3 == Language
+  # XXX KEBE SAYS FILL ME IN
+
   return 0
 }
 

@@ -1,4 +1,4 @@
-#!/bin/ksh93
+#!/bin/ksh
 #
 # CDDL HEADER START
 #
@@ -44,14 +44,14 @@ fi
 # Define the menu of commands and prompts
 menu_items=( \
     (menu_str="Find disks, create rpool, and install OmniOS"		 \
-	cmds=("/usr/sbin/find-and-install")				 \
+	cmds=("/kayak/find-and-install.sh")				 \
 	do_subprocess="true"						 \
 	msg_str="")							 \
     (menu_str="Install OmniOS straight on to a preconfigured rpool"	 \
-	cmds=("/usr/sbin/rpool-install rpool")				 \
+	cmds=("/kayak/rpool-install.sh rpool")				 \
 	do_subprocess="true"						 \
 	msg_str="")							 \
-    (menu_str="Shell (if you need to preconfigure rpool)"		 \
+    (menu_str="Shell (for manual rpool creation, or post-install ops on /mnt)" \
 	cmds=("$ROOT_SHELL")						 \
 	do_subprocess="true"						 \
 	msg_str="To return to the main menu, exit the shell")	 \
@@ -81,25 +81,11 @@ function update_term_menu_str
 
 # Set the TERM variable as follows:
 #
-# If connected to SPARC via keyboard/monitor, set TERM to "sun"
-# If connected to X86 via keyboard/monitor, set TERM to "sun-color"
-# If running on serial console, set TERM to "xterm"
+# Just set it to "sun-color" for now.
 #
 function set_term_type
 {
-    export TERM=xterm
-    arch=`/usr/bin/uname -p`
-    if [[ "${arch}" = "sparc" ]] ; then
-	output_device=`/usr/sbin/prtconf -vp | 			\
-		/usr/bin/grep "output-device" | 		\
-		/usr/bin/cut -f 2 -d\'`
-	[[ "$output_device" = "screen" ]] && export TERM=sun
-    else
-	console=`/usr/sbin/prtconf -vp | 			\
-		/usr/bin/grep "console" |			\
-		/usr/bin/cut -f 2 -d\'`
-	[[ -z ${console} ]] && export TERM=sun-color
-    fi
+    export TERM=sun-color
     update_term_menu_str
 }
 

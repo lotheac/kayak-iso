@@ -30,11 +30,11 @@
 	<single_instance />
 
         <dependency
-                name='single-user'
+                name='sysconfig'
                 grouping='require_all'
                 restart_on='none'
                 type='service'>
-                <service_fmri value='svc:/milestone/single-user />
+                <service_fmri value='svc:/milestone/sysconfig />
         </dependency>
 
 	<exec_method

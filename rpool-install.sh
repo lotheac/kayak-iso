@@ -18,16 +18,65 @@
 RPOOL=${1:-rpool}
 ZFS_IMAGE=/root/*.zfs.bz2
 
-echo "Installing from ZFS image $ZFS_IMAGE"
-
 zpool list $RPOOL >& /dev/null
 if [[ $? != 0 ]]; then
    echo "Cannot find root pool $RPOOL"
    echo "Press RETURN to exit"
    read
+   exit 1
 fi
 
-. /usr/lib/kayak/disk_help.sh
-. install_help.sh
+echo "Installing from ZFS image $ZFS_IMAGE"
 
-BuildBE $RPOOL
+
+. /kayak/disk_help.sh
+. /kayak/install_help.sh
+
+reality_check() {
+    # Make sure $1 (hostname) is a legit one.
+    echo $1 | egrep '^[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]$' > /dev/null
+    if [[ $? != 0 ]]; then
+        echo "[$1] is not a legitimate hostname."
+        return -1
+    fi
+    return 0
+}
+
+# Select a host name
+NEWHOST="unknown"
+until [[ $NEWHOST == "" ]]; do
+    HOSTNAME=$NEWHOST
+    echo -n "Please enter a hostname or press RETURN if you want [$HOSTNAME]: "
+    read NEWHOST
+    if [[ $NEWHOST != "" ]]; then
+	reality_check $NEWHOST
+	if [[ $? != 0 ]]; then
+	    NEWHOST=$HOSTNAME
+	fi
+    fi
+done
+
+# Select a timezone.
+NEWTZ=$TZ
+until [[ $NEWTZ == "" ]]; do
+    TZ=$NEWTZ
+    echo "Current timezone is [$TZ]:  " `TZ=$TZ date`
+    echo "(NOTE: If time/date above looks wrong, the timezone name doesn't exist.)"
+    echo -n "Enter a new timezone, or just hit RETURN to accept [$TZ]: "
+    read NEWTZ
+done
+
+# Select a language
+
+BuildBE $RPOOL $ZFS_IMAGE
+ApplyChanges $HOSTNAME $TZ
+MakeBootable $RPOOL
+zpool list -v $RPOOL
+echo ""
+beadm list
+echo ""
+echo "$RPOOL now has a working and mounted boot environment, per above."
+echo "Once back at the main menu, you can reboot from there, or"
+echo "re-enter the shell to modify your new BE before its first boot."
+echo -n "Press RETURN to go back to the menu: "
+read

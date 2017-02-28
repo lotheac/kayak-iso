@@ -116,3 +116,7 @@ install-package:	tftp-dirs server-dirs
 install-tftp:	tftp-dirs $(TFTP_FILES)
 
 install-web:	server-dirs $(WEB_FILES)
+
+install-iso:	install-tftp install-web
+	VERSION=$(VERSION) ./build_iso.sh
+	cp /tmp/foo.iso $(BUILDSEND_MP)/$(VERSION).iso

@@ -56,7 +56,6 @@ if [[ ! -d $ROOTDIR ]]; then
 fi
 SVCCFG_DTD=${ROOTDIR}/usr/share/lib/xml/dtd/service_bundle.dtd.1
 SVCCFG_REPOSITORY=${ROOTDIR}/etc/svc/repository.db
-#SVCCFG=/usr/sbin/svccfg
 if [[ -f ${PREBUILT_ILLUMOS}/usr/src/cmd/svc/svccfg/svccfg-native ]]; then
 	SVCCFG=${PREBUILT_ILLUMOS}/usr/src/cmd/svc/svccfg/svccfg-native
 else
