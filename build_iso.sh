@@ -60,6 +60,7 @@ rm /tmp/kr.$$
 # Put additional goodies into the boot-archive, which is what'll be / on
 # the booted ISO.
 cp $ZFS_IMG $MNT/root/.
+cp -p ./takeover-console $MNT/kayak/.
 cat <<EOF > $MNT/root/.bashrc
 export PATH=/usr/bin:/usr/sbin:/sbin
 export HOME=/root
@@ -67,7 +68,6 @@ EOF
 # Have initialboot muck with the console login service to make an interactive
 # installer get invoked.
 cat <<EOF > $MNT/.initialboot
-/usr/sbin/svccfg -s console-login:default addpg startd framework
 /usr/sbin/svccfg -s console-login:default setprop startd/need_session = boolean: true
 /usr/sbin/svcadm refresh console-login:default
 /usr/sbin/svcadm restart console-login:default
@@ -77,7 +77,7 @@ cat <<EOF > $MNT/lib/svc/method/console-login
 
 # CHEESY way to get the kayak-menu running w/o interference.
 export TERM=sun-color
-/kayak/kayak-menu.sh < /dev/console >& /dev/console
+/kayak/takeover-console /kayak/kayak-menu.sh
 EOF
 chmod 0755 $MNT/lib/svc/method/console-login
 devfsadm -r $MNT

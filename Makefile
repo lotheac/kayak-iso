@@ -117,6 +117,9 @@ install-tftp:	tftp-dirs $(TFTP_FILES)
 
 install-web:	server-dirs $(WEB_FILES)
 
-install-iso:	install-tftp install-web
+takeover-console:	takeover-console.c
+	gcc -o takeover-console takeover-console.c
+
+install-iso:	takeover-console install-tftp install-web
 	VERSION=$(VERSION) ./build_iso.sh
 	cp /tmp/foo.iso $(BUILDSEND_MP)/$(VERSION).iso
