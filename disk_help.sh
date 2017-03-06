@@ -96,9 +96,9 @@ BuildRpool() {
   ztype=""
   ztgt=""
   disks=`ListDisksUnique $*`
-  log "Disks being used for rpool: $disks"
+  log "Disks being used for root pool $RPOOL: $disks"
   if [[ -z "$disks" ]]; then
-    bomb "No matching disks found to build rpool"
+    bomb "No matching disks found to build root pool $RPOOL"
   fi
   rm -f /tmp/kayak-disk-list
   for i in $disks
@@ -110,11 +110,11 @@ BuildRpool() {
     # Keep track of disks for later...
     echo ${i} >> /tmp/kayak-disk-list
   done
-  log "zpool destroy rpool (just in case we've been run twice)"
-  zpool destroy rpool 2> /dev/null
-  log "Creating rpool with: zpool create -f rpool $ztype $ztgt"
+  log "zpool destroy $RPOOL (just in case we've been run twice)"
+  zpool destroy $RPOOL 2> /dev/null
+  log "Creating root pool with: zpool create -f $RPOOL $ztype $ztgt"
   # Just let "zpool create" do its thing. We want GPT disks now.
-  zpool create -f rpool $ztype $ztgt || bomb "Failed to create rpool"
+  zpool create -f $RPOOL $ztype $ztgt || bomb "Failed to create root pool $RPOOL"
   BuildBE
 }
 GetTargetVolSize() {
@@ -130,7 +130,7 @@ GetTargetVolSize() {
     echo $vsize
 }    
 GetRpoolFree() {
-    local zfsavail=`/sbin/zfs list -H -o avail rpool`
+    local zfsavail=`/sbin/zfs list -H -o avail $RPOOL` 
     if [[ ${zfsavail:(-1)} = "G" ]]; then
         local avail=`printf %0.f ${zfsavail::-1}`
     elif [[ ${zfsavail:(-1)} = "T" ]]; then
@@ -171,10 +171,10 @@ MakeSwapDump() {
     fi
 
     for volname in swap dump; do
-        /sbin/zfs create -V ${finalsize}G rpool/$volname || \
-            bomb "Failed to create rpool/$volname"
+        /sbin/zfs create -V ${finalsize}G $RPOOL/$volname || \
+            bomb "Failed to create $RPOOL/$volname"
     done
-    printf "/dev/zvol/dsk/rpool/swap\t-\t-\tswap\t-\tno\t-\n" >> $ALTROOT/etc/vfstab
-    Postboot /usr/sbin/dumpadm $savecore -d /dev/zvol/dsk/rpool/dump
+    printf "/dev/zvol/dsk/$RPOOL/swap\t-\t-\tswap\t-\tno\t-\n" >> $ALTROOT/etc/vfstab
+    Postboot /usr/sbin/dumpadm $savecore -d /dev/zvol/dsk/$RPOOL/dump
     return 0
 }
