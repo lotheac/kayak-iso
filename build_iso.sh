@@ -20,15 +20,24 @@ if [[ `id -u` != "0" ]]; then
 	exit 1
 fi
 
+if [[ -z $BUILDSEND_MP ]]; then
+	echo "Using /rpool/kayak_image for BUILDSEND_MP"
+	BUILDSEND_MP=/rpool/kayak_image
+fi
+
+if [[ -z $VERSION ]]; then
+	VERSION=`grep OmniOS $BUILDSEND_MP/root/etc/release | awk '{print $3}'`
+	echo "Using $VERSION..."
+fi
+
 PROTO=/tmp/proto
-KAYAK_ROOTBALL=/rpool/kayak_image/miniroot.gz
+KAYAK_ROOTBALL=$BUILDSEND_MP/miniroot.gz
 KAYAK_ROOT=/tmp/miniroot.$$
-#KAYAK_ROOT=/rpool/kayak_image/root
 MNT=/mnt
 UFS_LOFI=/tmp/boot_archive
 LOFI_SIZE=600M
-DST_ISO=/tmp/foo.iso
-ZFS_IMG=/rpool/kayak_image/*.bz2
+DST_ISO=/tmp/${VERSION}.iso
+ZFS_IMG=$BUILDSEND_MP/*.bz2
 
 mkfile $LOFI_SIZE $UFS_LOFI
 LOFI_PATH=`lofiadm -a $UFS_LOFI`
