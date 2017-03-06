@@ -92,7 +92,7 @@ ListDisksUnique(){
   done | sort | uniq | xargs
 }
 
-BuildRpool() {
+BuildRpoolOnly() {
   ztype=""
   ztgt=""
   disks=`ListDisksUnique $*`
@@ -115,6 +115,9 @@ BuildRpool() {
   log "Creating root pool with: zpool create -f $RPOOL $ztype $ztgt"
   # Just let "zpool create" do its thing. We want GPT disks now.
   zpool create -f $RPOOL $ztype $ztgt || bomb "Failed to create root pool $RPOOL"
+}
+BuildRpool() {
+  BuildRpoolOnly $*
   BuildBE
 }
 GetTargetVolSize() {
