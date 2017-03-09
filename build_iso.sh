@@ -145,8 +145,12 @@ EOF
 chmod 0755 $MNT/usr/bin/digest
 
 # Remind people this is the installer.
-sed 's/OmniOS/the OmniOS installer/g' < $PROTO/boot/defaults/loader.conf > /tmp/loader.conf.$$
-mv /tmp/loader.conf.$$ $PROTO/boot/defaults/loader.conf
+#sed 's/OmniOS/the OmniOS installer/g' < $PROTO/boot/defaults/loader.conf > /tmp/loader.conf.$$
+#mv /tmp/loader.conf.$$ $PROTO/boot/defaults/loader.conf
+cat <<EOF > $PROTO/boot/loader.conf.local
+loader_menu_title="Welcome to the OmniOS installer"
+autoboot_delay=5
+EOF
 
 #
 # Okay, we've populated the new ISO miniroot.  Close it up and install it
