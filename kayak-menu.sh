@@ -141,6 +141,9 @@ function prompt_for_term_type
 
 set_term_type
 
+# Get the user's keyboard choice out of the way now.
+/usr/bin/kbd -s
+
 # default to the Installer option
 defaultchoice=1
 
