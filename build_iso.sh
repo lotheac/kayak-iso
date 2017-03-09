@@ -15,6 +15,10 @@
 # Copyright 2017 OmniTI Computer Consulting, Inc. All rights reserved.
 #
 
+#
+# Build an ISO installer using the Kayak tools.
+#
+
 if [[ `id -u` != "0" ]]; then
 	echo "You must be root to run this script."
 	exit 1
@@ -30,45 +34,49 @@ if [[ -z $VERSION ]]; then
 	echo "Using $VERSION..."
 fi
 
+# Many of these depend on sufficient space in /tmp by default.  Please
+# modify as you deem appropriate.
 PROTO=/tmp/proto
 KAYAK_ROOTBALL=$BUILDSEND_MP/miniroot.gz
 KAYAK_ROOT=/tmp/miniroot.$$
+KR_FILE=/tmp/kr.$$
 MNT=/mnt
 UFS_LOFI=/tmp/boot_archive
 LOFI_SIZE=600M
 DST_ISO=/tmp/${VERSION}.iso
 ZFS_IMG=$BUILDSEND_MP/*.bz2
 
+# Create a UFS lofi file and mount the UFS filesystem in $MNT.  This will
+# form the boot_archive for the ISO.
 mkfile $LOFI_SIZE $UFS_LOFI
 LOFI_PATH=`lofiadm -a $UFS_LOFI`
 echo 'y' | newfs $LOFI_PATH
 mount $LOFI_PATH $MNT
-gunzip -c $KAYAK_ROOTBALL > /tmp/kr.$$
-LOFI_RPATH=`lofiadm -a /tmp/kr.$$`
+
+# Clone the already-created Kayak miniroot and copy it into both $MNT, and
+# into a now-created $PROTO. $PROTO will form the directory that gets
+# sprayed onto the ISO.
+gunzip -c $KAYAK_ROOTBALL > $KR_FILE
+LOFI_RPATH=`lofiadm -a $KR_FILE`
 mkdir $KAYAK_ROOT
 mount $LOFI_RPATH $KAYAK_ROOT
 tar -cf - -C $KAYAK_ROOT . | tar -xf - -C $MNT
 mkdir $PROTO
 tar -cf - -C $KAYAK_ROOT . | tar -xf - -C $PROTO
-
-# Ugggh, instead of maintaining a list of zoneinfo files, just tar a copy
-# of zoneinfo.  Use PREBUILT_ILLUMOS if possible...
-ZIPATH=usr/share/lib/zoneinfo
-if [[ -z $PREBUILT_ILLUMOS ]]; then
-    ZIROOT=/
-else
-    ZIROOT=$PREBUILT_ILLUMOS/proto/root_i386
-fi
-tar -cf - -C $ZIROOT/$ZIPATH . | tar -xf - -C $MNT/$ZIPATH
-
 umount $KAYAK_ROOT
 rmdir $KAYAK_ROOT
 lofiadm -d $LOFI_RPATH
-rm /tmp/kr.$$
+rm $KR_FILE
 
-# Put additional goodies into the boot-archive, which is what'll be / on
-# the booted ISO.
+#
+# Put additional goodies into the boot-archive on $MNT, which is
+# what'll be / (via ramdisk) once one boots the ISO.
+# 
+
+# The full ZFS image (also already-created) for actual installation.
 cp $ZFS_IMG $MNT/root/.
+
+# A cheesy way to get the boot menu to appear at boot time.
 cp -p ./takeover-console $MNT/kayak/.
 cat <<EOF > $MNT/root/.bashrc
 export PATH=/usr/bin:/usr/sbin:/sbin
@@ -89,14 +97,69 @@ export TERM=sun-color
 /kayak/takeover-console /kayak/kayak-menu.sh
 EOF
 chmod 0755 $MNT/lib/svc/method/console-login
+
+# Refresh the devices on the miniroot.
 devfsadm -r $MNT
 
+#
+# The ISO's miniroot is going to be larger than the PXE miniroot.  To that
+# end, some files not listed in the exception list do need to show up on
+# the miniroot.  Use PREBUILT_ILLUMOS if available, or the current system
+# if not.
+#
+from_one_to_other() {
+    tar -cf - -C $ZIROOT/$1 . | tar -xf - -C $MNT/$1
+}
+
+if [[ -z $PREBUILT_ILLUMOS ]]; then
+    ZIROOT=/
+else
+    ZIROOT=$PREBUILT_ILLUMOS/proto/root_i386
+fi
+
+# Add from_one_to_other for any directory you need.
+from_one_to_other usr/share/lib/zoneinfo
+
+# Gross hack to create a version of /usr/bin/digest that doesn't need
+# to have all of the crypto framework libraries. sha1sum is available,
+# and we can use it.
+cat <<EOF > $MNT/usr/bin/digest
+#!/bin/bash
+
+# FOR NOW, assume we're only ever going to be invoked by create_ramdisk,
+# which uses "digest -a sha1 <one-filename>".
+
+usage() {
+    echo "Usage:" > /dev/stderr
+    echo "  digest -l | [-v] -a <algorithm> [file...]" > /dev/stderr
+    exit 2
+}
+
+if [[ \$1 != "-a" || \$2 != "sha1" ]]; then
+    usage
+fi
+
+sha1sum \$3 | awk '{print $1}'
+exit 0
+EOF
+chmod 0755 $MNT/usr/bin/digest
+
+# Remind people this is the installer.
+sed 's/OmniOS/the OmniOS installer/g' < $PROTO/boot/defaults/loader.conf > /tmp/loader.conf.$$
+mv /tmp/loader.conf.$$ $PROTO/boot/defaults/loader.conf
+
+#
+# Okay, we've populated the new ISO miniroot.  Close it up and install it
+# on $PROTO as the boot archive.
+#
 umount $MNT
 lofiadm -d $LOFI_PATH
 cp $UFS_LOFI $PROTO/platform/i86pc/amd64/boot_archive
 digest -a sha1 $UFS_LOFI > $PROTO/platform/i86pc/amd64/boot_archive.hash
 rm -rf $PROTO/{usr,bin,sbin,lib,kernel}
 du -sh $PROTO/.
+
+# And finally, burn the ISO.
 mkisofs -o $DST_ISO -b boot/cdboot -c .catalog -no-emul-boot -boot-load-size 4 -boot-info-table -N -l -R -U -allow-multidot -no-iso-translate -cache-inodes -d -D -V OmniOS $PROTO
 
 rm -rf $PROTO $UFS_LOFI

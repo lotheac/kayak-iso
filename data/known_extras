@@ -45,8 +45,6 @@
 0 /usr/bin/scp
 0 /usr/bin/clear
 0 /usr/bin/tput
-0 /usr/bin/digest
-0 /usr/bin/amd64/digest
 0 /usr/bin/getent
 0 /usr/bin/kbd
 0 /usr/bin/mkfifo
