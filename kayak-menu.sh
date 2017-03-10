@@ -41,14 +41,21 @@ if [[ -z "$ROOT_SHELL" ]]; then
 	ROOT_SHELL="/usr/bin/sh"
 fi
 
+# Get the user's keyboard choice out of the way now.
+/usr/bin/kbd -s
+# Remember it post-installation scribbling into installed-image /etc/default/kbd
+ktype=`/usr/bin/kbd -l | grep type | awk -F= '{print $2}'`
+layout=`/usr/bin/kbd -l | grep layout | awk -F= '{print $2}' | awk '{print $1}'`
+klang=`grep $layout /usr/share/lib/keytables/type_$ktype/kbd_layouts | awk -F= '{print $1}'`
+
 # Define the menu of commands and prompts
 menu_items=( \
     (menu_str="Find disks, create rpool, and install OmniOS"		 \
-	cmds=("/kayak/find-and-install.sh")				 \
+	cmds=("/kayak/find-and-install.sh $klang")			 \
 	do_subprocess="true"						 \
 	msg_str="")							 \
     (menu_str="Install OmniOS straight on to a preconfigured rpool"	 \
-	cmds=("/kayak/rpool-install.sh rpool")				 \
+	cmds=("/kayak/rpool-install.sh rpool $klang")			 \
 	do_subprocess="true"						 \
 	msg_str="")							 \
     (menu_str="Shell (for manual rpool creation, or post-install ops on /mnt)" \
@@ -140,9 +147,6 @@ function prompt_for_term_type
 }
 
 set_term_type
-
-# Get the user's keyboard choice out of the way now.
-/usr/bin/kbd -s
 
 # default to the Installer option
 defaultchoice=1

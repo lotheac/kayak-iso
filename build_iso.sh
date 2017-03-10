@@ -119,6 +119,7 @@ fi
 
 # Add from_one_to_other for any directory you need.
 from_one_to_other usr/share/lib/zoneinfo
+from_one_to_other usr/share/lib/keytables
 
 # Gross hack to create a version of /usr/bin/digest that doesn't need
 # to have all of the crypto framework libraries. sha1sum is available,

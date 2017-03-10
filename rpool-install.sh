@@ -17,6 +17,7 @@
 
 RPOOL=${1:-rpool}
 ZFS_IMAGE=/root/*.zfs.bz2
+keyboard_layout=${2:-US-English}
 
 zpool list $RPOOL >& /dev/null
 if [[ $? != 0 ]]; then
@@ -67,9 +68,11 @@ until [[ $NEWTZ == "" ]]; do
 done
 
 # Select a language
+# XXX KEBE SAYS just use C for now
+LANG=C
 
 BuildBE $RPOOL $ZFS_IMAGE
-ApplyChanges $HOSTNAME $TZ
+ApplyChanges $HOSTNAME $TZ $LANG $keyboard_layout
 MakeBootable $RPOOL
 zpool list -v $RPOOL
 echo ""

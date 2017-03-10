@@ -17,6 +17,7 @@
 
 # Capture diskinfo(1M) output in a tempfile.
 
+keyboard_layout=${1:-US-English}
 SCRATCH=/tmp/di.$$
 diskinfo > $SCRATCH
 numdisks=`wc -l $SCRATCH | awk '{print $1}'`
@@ -131,4 +132,4 @@ BuildRpoolOnly $DISKLIST
 rm -f $SCRATCH
 
 # Running actual install.
-/kayak/rpool-install.sh $RPOOL
+/kayak/rpool-install.sh $RPOOL $keyboard_layout

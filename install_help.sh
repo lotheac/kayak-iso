@@ -121,7 +121,7 @@ BuildBE() {
   zfs set canmount=off $RPOOL/ROOT
   zfs set mountpoint=legacy $RPOOL/ROOT
   log "Receiving image: $MEDIA"
-  $GRAB $MEDIA | pv -B 128m | $DECOMP | zfs receive -u $RPOOL/ROOT/omnios
+  $GRAB $MEDIA | pv -B 128m -w 78 | $DECOMP | zfs receive -u $RPOOL/ROOT/omnios
   zfs set canmount=noauto $RPOOL/ROOT/omnios
   zfs set mountpoint=legacy $RPOOL/ROOT/omnios
   log "Cleaning up boot environment"
@@ -214,6 +214,12 @@ SetTimezone()
   sed -i -e "s:^TZ=.*:TZ=${1}:" $ALTROOT/etc/default/init
 }
 
+SetLang()
+{
+  log "Setting language: ${1}"
+  sed -i -e "s:^LANG=.*:LANG=${1}:" $ALTROOT/etc/default/init
+}
+
 ApplyChanges(){
   SetRootPW
   [[ -L $ALTROOT/etc/svc/profile/generic.xml ]] || \
@@ -233,7 +239,26 @@ ApplyChanges(){
   fi
 
   # arg3 == Language
-  # XXX KEBE SAYS FILL ME IN
+  if [[ ! -z $3 ]]; then
+      SetLang $3
+  fi
+
+  # arg4 == Keyboard layout
+  if [[ ! -z $4 ]]; then
+      # Even though /etc/default/kbd is now defunct, we instead use it
+      # For now, use it as the channel from the main menu to here, the
+      # installer. Extract LAYOUT=<foo> and put it in
+      # "setprop keyboard-layout <foo>" in the newly-installed root's
+      # /boot/solaris/bootenv.rc (aka. eeprom(1M) storage for amd64/i386).
+      layout=$4
+      sed "s/keyboard-layout Unknown/keyboard-layout $layout/g" \
+	  < $ALTROOT/boot/solaris/bootenv.rc > /tmp/bootenv.rc
+      mv /tmp/bootenv.rc $ALTROOT/boot/solaris/bootenv.rc
+      # Also modify the SMF manifest, assuming US-English was set by default.
+      sed "s/US-English/$layout/g" \
+	 < $ALTROOT/lib/svc/manifest/system/keymap.xml > /tmp/keymap.xml
+      cp -f /tmp/keymap.xml $ALTROOT/lib/svc/manifest/system/keymap.xml
+  fi
 
   return 0
 }
