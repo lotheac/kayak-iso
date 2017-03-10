@@ -31,8 +31,9 @@ fail() {
 
 # NOTE --> The URL needs to be updated with every release.
 # Change "bloody" to whatever release the current branch is.
-PUBLISHER=omnios
-: ${PKGURL:=http://pkg.omniti.com/omnios/bloody}
+PUBLISHER=unleashed
+: ${PKGURL:=/ws/unleashed/packages/i386/nightly/repo.redist}
+USERLAND=/ws/oi-userland/i386/repo
 : ${GZIP_CMD:=gzip}
 SRCDIR=$(dirname $0)
 DIDWORK=0
@@ -137,7 +138,7 @@ SYSTEM="system/boot/grub system/boot/real-mode system/boot/wanboot/internal
 	system/library/storage/libmpscsi_vhci
 	system/library/storage/scsi-plugins
 	system/library system/network
-	system/prerequisite/gnu system/storage/luxadm
+	system/storage/luxadm
 	system/storage/fibre-channel/port-utility"
 
 DEBUG_PKGS="developer/debug/mdb system/dtrace developer/dtrace"
@@ -163,25 +164,25 @@ DRIVERS="driver/audio driver/crypto/dca driver/crypto/tpm driver/firewire
 	driver/network/rge driver/network/rpcib driver/network/rtls
 	driver/network/sdp driver/network/sdpib driver/network/sfe
 	driver/network/tavor driver/network/usbecm driver/network/vr
-	driver/network/xge driver/network/yge driver/pcmcia driver/serial/pcser
+	driver/network/xge driver/network/yge driver/pcmcia
 	driver/serial/usbftdi driver/serial/usbsacm driver/serial/usbser
 	driver/serial/usbser_edge driver/serial/usbsksp
 	driver/serial/usbsksp/usbs49_fw driver/serial/usbsprl
-	driver/storage/aac driver/storage/adpu320 driver/storage/ahci
+	driver/storage/aac driver/storage/ahci
 	driver/storage/amr driver/storage/arcmsr driver/storage/ata
 	driver/storage/bcm_sata driver/storage/blkdev driver/storage/cpqary3
 	driver/storage/glm driver/storage/lsimega driver/storage/marvell88sx
 	driver/storage/mega_sas driver/storage/mpt_sas driver/storage/mr_sas
-	driver/storage/nv_sata driver/storage/pcata driver/storage/pmcs
+	driver/storage/nv_sata driver/storage/pmcs
 	driver/storage/sbp2 driver/storage/scsa1394 driver/storage/sdcard
 	driver/storage/ses driver/storage/si3124 driver/storage/smp
 	driver/usb driver/usb/ugen driver/xvm/pv driver/storage/vioblk
 	driver/network/vioif driver/storage/nvme driver/storage/pvscsi"
 
-PARTS="release/name release/notices service/picl install/beadm SUNWcs SUNWcsd
-	library/libidn shell/pipe-viewer text/less editor/vim
-        developer/linker file/gnu-coreutils openssh openssh-server
-	diagnostic/diskinfo"
+PARTS="service/picl install/beadm SUNWcs SUNWcsd
+	text/less editor/vim
+	developer/linker openssh
+	diagnostic/diskinfo developer/illumos-gcc"
 
 PKGS="$PARTS $SYSTEM $DRIVERS"
 
@@ -256,14 +257,8 @@ step() {
 
 	echo "Creating image of $PUBLISHER from $PKGURL"
 	$PKG image-create -F -p $PUBLISHER=$PKGURL $ROOTDIR || fail "image-create"
-        # If a version was requested, respect it
-	if [[ -n $BUILDNUM ]]; then
-		$PKG -R $ROOTDIR install illumos-gate@11-0.$BUILDNUM omnios-userland@11-0.$BUILDNUM || fail "version constraint prep"
-	fi
+        $PKG -R $ROOTDIR set-publisher -p $USERLAND || fail 'userland'
 	$PKG -R $ROOTDIR install $PKGS || fail "install"
-	if [[ -n $BUILDNUM ]]; then
-		$PKG -R $ROOTDIR uninstall illumos-gate omnios-userland || fail "version constraint cleanup"
-	fi
 	chkpt fixup
 	;;
 
