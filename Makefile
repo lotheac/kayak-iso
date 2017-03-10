@@ -112,3 +112,6 @@ takeover-console:	takeover-console.c
 install-iso:	takeover-console install-tftp install-web
 	BUILDSEND_MP=$(BUILDSEND_MP) VERSION=$(VERSION) ./build_iso.sh
 	cp /tmp/$(VERSION).iso $(BUILDSEND_MP)/$(VERSION).iso
+
+install-usb:	install-iso
+	./usbgen.sh $(BUILDSEND_MP)/$(VERSION).iso $(BUILDSEND_MP)/$(VERSION).usb-dd /tmp
