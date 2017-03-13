@@ -43,10 +43,11 @@ fi
 
 # Get the user's keyboard choice out of the way now.
 /usr/bin/kbd -s
+/usr/bin/loadkeys
 # Remember it post-installation scribbling into installed-image /etc/default/kbd
 ktype=`/usr/bin/kbd -l | grep type | awk -F= '{print $2}'`
 layout=`/usr/bin/kbd -l | grep layout | awk -F= '{print $2}' | awk '{print $1}'`
-klang=`grep $layout /usr/share/lib/keytables/type_$ktype/kbd_layouts | awk -F= '{print $1}'`
+klang=`grep -w $layout /usr/share/lib/keytables/type_$ktype/kbd_layouts | awk -F= '{print $1}'`
 
 # Define the menu of commands and prompts
 menu_items=( \
