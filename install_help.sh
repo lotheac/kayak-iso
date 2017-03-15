@@ -81,7 +81,7 @@ RootPW(){
   ROOTPW="$1"
 }
 SetRootPW(){
-  sed -i -e 's%^root::%root:'$ROOTPW':%' $ALTROOT/etc/shadow
+  sed -i '' -e 's%^root::%root:'$ROOTPW':%' $ALTROOT/etc/shadow
 }
 ForceDHCP(){
   log "Forcing all interfaces into DHCP..."
@@ -211,13 +211,13 @@ AutoHostname() {
 SetTimezone()
 {
   log "Setting timezone: ${1}"
-  sed -i -e "s:^TZ=.*:TZ=${1}:" $ALTROOT/etc/default/init
+  sed -i '' -e "s:^TZ=.*:TZ=${1}:" $ALTROOT/etc/default/init
 }
 
 SetLang()
 {
   log "Setting language: ${1}"
-  sed -i -e "s:^LANG=.*:LANG=${1}:" $ALTROOT/etc/default/init
+  sed -i '' -e "s:^LANG=.*:LANG=${1}:" $ALTROOT/etc/default/init
 }
 
 ApplyChanges(){

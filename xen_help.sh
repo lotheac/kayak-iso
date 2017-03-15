@@ -137,7 +137,7 @@ module$ /platform/i86pc/amd64/boot_archive
 #============ End of LIBBE entry =============
 EOF
 
-    sed -i -e "s/^title.*/title $RELEASE/;" /${RPOOL}/boot/grub/menu.lst
+    sed -i '' -e "s/^title.*/title $RELEASE/;" /${RPOOL}/boot/grub/menu.lst
 
     bootadm update-archive -R $ALTROOT
 
@@ -145,11 +145,11 @@ EOF
 
     # Allow root to ssh in
     log "...setting PermitRootLogin=yes in sshd_config"
-    sed -i -e 's%^PermitRootLogin.*%PermitRootLogin yes%' $ALTROOT/etc/ssh/sshd_config
+    sed -i '' -e 's%^PermitRootLogin.*%PermitRootLogin yes%' $ALTROOT/etc/ssh/sshd_config
     
     # Prevent direct root non-RSA logins (passwd -N equivalent)
     log "...NP'ing root's password"
-    sed -i -e 's/^root:\$.*:/root:NP:6445::::::/;' $ALTROOT/etc/shadow
+    sed -i '' -e 's/^root:\$.*:/root:NP:6445::::::/;' $ALTROOT/etc/shadow
 
     # Set up to use DNS (hello, this is the year 2013. I never really understood this)
     log "...enabling DNS resolution"

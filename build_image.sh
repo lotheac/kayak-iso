@@ -272,7 +272,7 @@ step() {
 	rm $WORKDIR/vfstab
 	cp $ROOTDIR/lib/svc/seed/global.db $ROOTDIR/etc/svc/repository.db
 
-	sed -i 's,PASSREQ=YES,PASSREQ=NO,' $ROOTDIR/etc/default/login
+	sed -i '' 's,PASSREQ=YES,PASSREQ=NO,' $ROOTDIR/etc/default/login
 
 	${SVCCFG} import ${ROOTDIR}/lib/svc/manifest/milestone/sysconfig.xml
 	for xml in $UNNEEDED_MANIFESTS; do
