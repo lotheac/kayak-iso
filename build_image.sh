@@ -179,7 +179,7 @@ DRIVERS="driver/audio driver/crypto/dca driver/crypto/tpm driver/firewire
 	driver/network/vioif driver/storage/nvme driver/storage/pvscsi"
 
 PARTS="release/name release/notices service/picl install/beadm SUNWcs SUNWcsd
-	library/libidn shell/pipe-viewer text/less editor/vim
+	library/libidn shell/pipe-viewer text/less editor/vim web/curl
         developer/linker file/gnu-coreutils openssh openssh-server
 	diagnostic/diskinfo"
 
