@@ -108,7 +108,9 @@ devfsadm -r $MNT
 # if not.
 #
 from_one_to_other() {
-    tar -cf - -C $ZIROOT/$1 . | tar -xf - -C $MNT/$1
+    dir=$1
+    shift
+    tar -cf - -C $ZIROOT/$dir ${@:-.} | tar -xf - -C $MNT/$dir
 }
 
 if [[ -z $PREBUILT_ILLUMOS ]]; then
@@ -117,9 +119,11 @@ else
     ZIROOT=$PREBUILT_ILLUMOS/proto/root_i386
 fi
 
-# Add from_one_to_other for any directory you need.
+# Add from_one_to_other for any directory {file|subdir file|subdir ...} you need
 from_one_to_other usr/share/lib/zoneinfo
 from_one_to_other usr/share/lib/keytables
+from_one_to_other usr/sbin ping
+from_one_to_other usr/bin netstat
 
 # Gross hack to create a version of /usr/bin/digest that doesn't need
 # to have all of the crypto framework libraries. sha1sum is available,
