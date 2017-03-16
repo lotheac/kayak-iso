@@ -126,8 +126,6 @@ from_one_to_other usr/sbin ping
 from_one_to_other usr/bin netstat
 
 # Remind people this is the installer.
-#sed 's/OmniOS/the OmniOS installer/g' < $PROTO/boot/defaults/loader.conf > /tmp/loader.conf.$$
-#mv /tmp/loader.conf.$$ $PROTO/boot/defaults/loader.conf
 cat <<EOF > $PROTO/boot/loader.conf.local
 loader_menu_title="Welcome to the OmniOS installer"
 autoboot_delay=5
