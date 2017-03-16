@@ -166,7 +166,7 @@ MakeBootable(){
   zpool set bootfs=$RPOOL/ROOT/omnios rpool
   # Must do beadm activate first on the off chance we're bootstrapping from
   # GRUB.
-  beadm activate omnios
+  beadm activate omnios || return 1
 
   if [[ ! -z $1 ]]; then
       # Generate kayak-disk-list from zpool status.
@@ -179,10 +179,10 @@ MakeBootable(){
   # NOTE:  This installboot loop assumes we're doing GPT whole-disk rpools.
   for i in `cat /tmp/kayak-disk-list`
   do
-      installboot -mf /boot/pmbr /boot/gptzfsboot /dev/rdsk/${i}s0
+      installboot -mfF /boot/pmbr /boot/gptzfsboot /dev/rdsk/${i}s0 || return 1
   done
 
-  bootadm update-archive -R $ALTROOT
+  bootadm update-archive -R $ALTROOT || return 1
   return 0
 }
 
@@ -280,7 +280,9 @@ Reboot() {
 }
 
 RunInstall(){
-  FetchConfig || bomb "Could not fecth kayak config for target"
+  FetchConfig || bomb "Could not fetch kayak config for target"
+  # Set RPOOL if it wasn't done so already. We need it set.
+  RPOOL=${RPOOL:-rpool}
   . $ICFILE
   Postboot 'exit $SMF_EXIT_OK'
   ApplyChanges || bomb "Could not apply all configuration changes"

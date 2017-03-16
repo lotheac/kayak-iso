@@ -349,6 +349,11 @@ step() {
 	mkdir $WORKDIR/mnt/kayak
 	cp $SRCDIR/*.sh $WORKDIR/mnt/kayak/
 	chmod a+x $WORKDIR/mnt/kayak/*.sh
+
+	# So "bootadm update-archive" can work.
+	cp $SRCDIR/digest $WORKDIR/mnt/usr/bin/digest
+	chmod 0755 $WORKDIR/mnt/usr/bin/digest
+
 	make_initial_boot $WORKDIR/mnt/.initialboot
 	if [[ -n "$DEBUG" ]]; then
 		cp $SRCDIR/anon.system $WORKDIR/mnt/etc/system
