@@ -117,7 +117,7 @@ UNNEEDED_MANIFESTS="application/management/net-snmp.xml
 	system/stmf.xml system/fmd.xml system/utmp.xml
 	system/poold.xml system/dumpadm.xml"
 
-SYSTEM="system/boot/grub system/boot/real-mode system/boot/wanboot/internal
+SYSTEM="system/boot/real-mode system/boot/wanboot/internal
 	system/boot/loader system/boot/wanboot system/data/hardware-registry
 	system/data/keyboard/keytables system/data/terminfo
 	system/data/zoneinfo system/extended-system-utilities
