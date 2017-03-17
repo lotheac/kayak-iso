@@ -29,7 +29,10 @@ INSTALLS=anon.dtrace.conf anon.system build_image.sh build_zfs_send.sh \
 
 TFTP_FILES=$(DESTDIR)/tftpboot/boot/platform/i86pc/kernel/amd64/unix \
 	$(DESTDIR)/tftpboot/kayak/miniroot.gz \
+	$(DESTDIR)/tftpboot/kayak/miniroot.gz.hash \
 	$(DESTDIR)/tftpboot/boot/grub/menu.lst \
+	$(DESTDIR)/tftpboot/pxeboot $(DESTDIR)/tftpboot/boot/loader.conf.local \
+	$(DESTDIR)/tftpboot/boot/forth $(DESTDIR)/tftpboot/boot/defaults \
 	$(DESTDIR)/tftpboot/pxegrub
 
 WEB_FILES=$(DESTDIR)/var/kayak/kayak/$(VERSION).zfs.bz2
@@ -50,6 +53,18 @@ $(BUILDSEND_MP)/kayak_$(VERSION).zfs.bz2:	build_zfs_send.sh
 $(DESTDIR)/tftpboot/pxegrub:	/boot/grub/pxegrub
 	cp -p $< $@
 
+$(DESTDIR)/tftpboot/pxeboot:	/boot/pxeboot
+	cp -p $< $@
+
+$(DESTDIR)/tftpboot/boot/loader.conf.local:	loader.conf.local
+	cp -p $< $@
+
+$(DESTDIR)/tftpboot/boot/forth:	/boot/forth
+	cp -rp $< $@
+
+$(DESTDIR)/tftpboot/boot/defaults:	/boot/defaults
+	cp -rp $< $@
+
 $(DESTDIR)/tftpboot/boot/grub/menu.lst:	sample/menu.lst.000000000000
 	sed -e 's/@VERSION@/$(VERSION)/' $< > $@
 
@@ -58,6 +73,9 @@ $(DESTDIR)/tftpboot/boot/platform/i86pc/kernel/amd64/unix:	/platform/i86pc/kerne
 
 $(DESTDIR)/tftpboot/kayak/miniroot.gz:	$(BUILDSEND_MP)/miniroot.gz
 	cp -p $< $@
+
+$(DESTDIR)/tftpboot/kayak/miniroot.gz.hash:	$(BUILDSEND_MP)/miniroot.gz
+	digest -a sha1 $< > $@
 
 build_image.sh:
 	VERSION=$(VERSION) ./build_image.sh

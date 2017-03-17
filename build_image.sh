@@ -118,7 +118,7 @@ UNNEEDED_MANIFESTS="application/management/net-snmp.xml
 	system/stmf.xml system/fmd.xml system/utmp.xml
 	system/poold.xml system/dumpadm.xml"
 
-SYSTEM="system/boot/grub system/boot/real-mode system/boot/wanboot/internal
+SYSTEM="system/boot/real-mode system/boot/wanboot/internal
 	system/boot/loader system/boot/wanboot system/data/hardware-registry
 	system/data/keyboard/keytables system/data/terminfo
 	system/data/zoneinfo system/extended-system-utilities
@@ -180,7 +180,7 @@ DRIVERS="driver/audio driver/crypto/dca driver/crypto/tpm driver/firewire
 	driver/network/vioif driver/storage/nvme driver/storage/pvscsi"
 
 PARTS="service/picl install/beadm SUNWcs SUNWcsd
-	text/less editor/vim
+	shell/pipe-viewer text/less editor/vim web/curl
 	developer/linker openssh
 	diagnostic/diskinfo developer/illumos-gcc"
 
@@ -344,6 +344,11 @@ step() {
 	mkdir $WORKDIR/mnt/kayak
 	cp $SRCDIR/*.sh $WORKDIR/mnt/kayak/
 	chmod a+x $WORKDIR/mnt/kayak/*.sh
+
+	# So "bootadm update-archive" can work.
+	cp $SRCDIR/digest $WORKDIR/mnt/usr/bin/digest
+	chmod 0755 $WORKDIR/mnt/usr/bin/digest
+
 	make_initial_boot $WORKDIR/mnt/.initialboot
 	if [[ -n "$DEBUG" ]]; then
 		cp $SRCDIR/anon.system $WORKDIR/mnt/etc/system

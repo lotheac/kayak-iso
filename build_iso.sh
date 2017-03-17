@@ -108,7 +108,9 @@ devfsadm -r $MNT
 # if not.
 #
 from_one_to_other() {
-    tar -cf - -C $ZIROOT/$1 . | tar -xf - -C $MNT/$1
+    dir=$1
+    shift
+    tar -cf - -C $ZIROOT/$dir ${@:-.} | tar -xf - -C $MNT/$dir
 }
 
 if [[ -z $PREBUILT_ILLUMOS ]]; then
@@ -117,37 +119,13 @@ else
     ZIROOT=$PREBUILT_ILLUMOS/proto/root_i386
 fi
 
-# Add from_one_to_other for any directory you need.
+# Add from_one_to_other for any directory {file|subdir file|subdir ...} you need
 from_one_to_other usr/share/lib/zoneinfo
 from_one_to_other usr/share/lib/keytables
-
-# Gross hack to create a version of /usr/bin/digest that doesn't need
-# to have all of the crypto framework libraries. sha1sum is available,
-# and we can use it.
-cat <<EOF > $MNT/usr/bin/digest
-#!/bin/bash
-
-# FOR NOW, assume we're only ever going to be invoked by create_ramdisk,
-# which uses "digest -a sha1 <one-filename>".
-
-usage() {
-    echo "Usage:" > /dev/stderr
-    echo "  digest -l | [-v] -a <algorithm> [file...]" > /dev/stderr
-    exit 2
-}
-
-if [[ \$1 != "-a" || \$2 != "sha1" ]]; then
-    usage
-fi
-
-sha1sum \$3 | awk '{print $1}'
-exit 0
-EOF
-chmod 0755 $MNT/usr/bin/digest
+from_one_to_other usr/sbin ping
+from_one_to_other usr/bin netstat
 
 # Remind people this is the installer.
-#sed 's/OmniOS/the OmniOS installer/g' < $PROTO/boot/defaults/loader.conf > /tmp/loader.conf.$$
-#mv /tmp/loader.conf.$$ $PROTO/boot/defaults/loader.conf
 cat <<EOF > $PROTO/boot/loader.conf.local
 loader_menu_title="Welcome to the OmniOS installer"
 autoboot_delay=5
