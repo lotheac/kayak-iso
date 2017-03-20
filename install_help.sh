@@ -109,9 +109,9 @@ BuildBE() {
       DECOMP="bzip2 -dc"
       GRAB="curl -s"
   else
-      # ASSUME $2 is a file path.
+      # ASSUME $2 is a file path.  TODO: Parse the URL...
       MEDIA=$2
-      # XXX KEBE SAYS, make switch statement based on $MEDIA's extension.
+      # TODO: make switch statement based on $MEDIA's extension.
       # e.g. "bz2" ==> "bzip -dc", "7z" ==> 
       DECOMP="bzip2 -dc"
       GRAB=cat
@@ -220,6 +220,21 @@ SetLang()
   sed -i -e "s:^LANG=.*:LANG=${1}:" $ALTROOT/etc/default/init
 }
 
+SetKeyboardLayout()
+{
+      # Put the new keyboard layout ($1) in
+      # "setprop keyboard-layout <foo>" in the newly-installed root's
+      # /boot/solaris/bootenv.rc (aka. eeprom(1M) storage for amd64/i386).
+      layout=$1
+      sed "s/keyboard-layout Unknown/keyboard-layout $layout/g" \
+	  < $ALTROOT/boot/solaris/bootenv.rc > /tmp/bootenv.rc
+      mv /tmp/bootenv.rc $ALTROOT/boot/solaris/bootenv.rc
+      # Also modify the SMF manifest, assuming US-English was set by default.
+      sed "s/US-English/$layout/g" \
+	 < $ALTROOT/lib/svc/manifest/system/keymap.xml > /tmp/keymap.xml
+      cp -f /tmp/keymap.xml $ALTROOT/lib/svc/manifest/system/keymap.xml
+}
+
 ApplyChanges(){
   SetRootPW
   [[ -L $ALTROOT/etc/svc/profile/generic.xml ]] || \
@@ -245,19 +260,7 @@ ApplyChanges(){
 
   # arg4 == Keyboard layout
   if [[ ! -z $4 ]]; then
-      # Even though /etc/default/kbd is now defunct, we instead use it
-      # For now, use it as the channel from the main menu to here, the
-      # installer. Extract LAYOUT=<foo> and put it in
-      # "setprop keyboard-layout <foo>" in the newly-installed root's
-      # /boot/solaris/bootenv.rc (aka. eeprom(1M) storage for amd64/i386).
-      layout=$4
-      sed "s/keyboard-layout Unknown/keyboard-layout $layout/g" \
-	  < $ALTROOT/boot/solaris/bootenv.rc > /tmp/bootenv.rc
-      mv /tmp/bootenv.rc $ALTROOT/boot/solaris/bootenv.rc
-      # Also modify the SMF manifest, assuming US-English was set by default.
-      sed "s/US-English/$layout/g" \
-	 < $ALTROOT/lib/svc/manifest/system/keymap.xml > /tmp/keymap.xml
-      cp -f /tmp/keymap.xml $ALTROOT/lib/svc/manifest/system/keymap.xml
+      SetKeyboardLayout $4
   fi
 
   return 0
