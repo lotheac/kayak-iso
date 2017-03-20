@@ -43,8 +43,8 @@ KR_FILE=/tmp/kr.$$
 MNT=/mnt
 UFS_LOFI=/tmp/boot_archive
 LOFI_SIZE=600M
-DST_ISO=/tmp/${VERSION}.iso
-ZFS_IMG=$BUILDSEND_MP/*.bz2
+DST_ISO=$BUILDSEND_MP/${VERSION}.iso
+ZFS_IMG=$BUILDSEND_MP/kayak_${VERSION}.zfs.bz2
 
 # Create a UFS lofi file and mount the UFS filesystem in $MNT.  This will
 # form the boot_archive for the ISO.
