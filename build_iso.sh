@@ -122,6 +122,8 @@ fi
 # Add from_one_to_other for any directory {file|subdir file|subdir ...} you need
 from_one_to_other usr/share/lib/zoneinfo
 from_one_to_other usr/share/lib/keytables
+from_one_to_other usr/share/lib/terminfo
+from_one_to_other usr/gnu/share/terminfo
 from_one_to_other usr/sbin ping
 from_one_to_other usr/bin netstat
 
