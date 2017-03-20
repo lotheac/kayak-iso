@@ -67,8 +67,7 @@ until [[ $NEWTZ == "" ]]; do
     read NEWTZ
 done
 
-# Select a language
-# XXX KEBE SAYS just use C for now
+# Because of kayak's small miniroot, just use C as the language for now.
 LANG=C
 
 BuildBE $RPOOL $ZFS_IMAGE
