@@ -77,3 +77,6 @@
 0 /usr/gnu/bin/sha1sum
 0 /usr/bin/sha1sum
 0 /usr/sbin/shutdown
+0 /usr/sbin/killall
+0 /usr/bin/pkill
+0 /usr/bin/nc
