@@ -56,18 +56,11 @@ until [[ $finished == 1 ]]; do
     if [[ $choice == 9 ]]; then
 	DISKLIST=""
     elif [[ $choice == 8 ]]; then
-	###DEBUG
-	#echo -n "Old page $page, offset $offset... HIT RETURN!"
-	#read
-
 	page=$(($page + 1))
 	if [[ $page == $highpage ]]; then
 	    page=0
 	fi
 	offset=$(($page * $onepage + 2))
-	###DEBUG
-	#echo -n "New page $page, offset $offset... HIT RETURN!"
-	#read
     elif [[ $choice == 0 ]]; then
 	if [[ $DISKLIST == "" ]]; then
 	    echo -n "Press RETURN to go back to the main menu: "
@@ -122,9 +115,6 @@ until [[ $NEWRPOOL == "" ]]; do
     fi
 done
 
-###DEBUG
-#echo "Would do this:"
-#echo "    BuildRpool $DISKLIST"
 . /kayak/install_help.sh
 . /kayak/disk_help.sh
 BuildRpoolOnly $DISKLIST
