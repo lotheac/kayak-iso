@@ -141,7 +141,7 @@ SYSTEM="system/boot/real-mode system/boot/wanboot/internal
 	system/storage/luxadm
 	system/storage/fibre-channel/port-utility"
 
-DEBUG_PKGS="developer/debug/mdb system/dtrace developer/dtrace"
+DEBUG_PKGS="developer/debug/mdb developer/dtrace system/kernel/dtrace/providers"
 
 DRIVERS="driver/audio driver/crypto/dca driver/crypto/tpm driver/firewire
 	driver/graphics/agpgart driver/graphics/atiatom driver/graphics/drm
@@ -181,8 +181,8 @@ DRIVERS="driver/audio driver/crypto/dca driver/crypto/tpm driver/firewire
 
 PARTS="service/picl install/beadm SUNWcs SUNWcsd
 	shell/pipe-viewer text/less editor/vim web/curl
-	developer/linker openssh
-	diagnostic/diskinfo developer/illumos-gcc"
+	developer/linker openssh library/ncurses
+	diagnostic/diskinfo shell/bash"
 
 PKGS="$PARTS $SYSTEM $DRIVERS"
 
@@ -190,7 +190,7 @@ if [ -n "$DEBUG" ]; then
 	PKGS="$PKGS $DEBUG_PKGS"
 	BIGROOT=1
 fi
-CULL="perl python package/pkg snmp"
+CULL="python package/pkg snmp"
 RMRF="/var/pkg /usr/share/man /usr/lib/python2.7 /usr/lib/iconv"
 
 ID=`id -u`
@@ -344,10 +344,6 @@ step() {
 	mkdir $WORKDIR/mnt/kayak
 	cp $SRCDIR/*.sh $WORKDIR/mnt/kayak/
 	chmod a+x $WORKDIR/mnt/kayak/*.sh
-
-	# So "bootadm update-archive" can work.
-	cp $SRCDIR/digest $WORKDIR/mnt/usr/bin/digest
-	chmod 0755 $WORKDIR/mnt/usr/bin/digest
 
 	make_initial_boot $WORKDIR/mnt/.initialboot
 	if [[ -n "$DEBUG" ]]; then

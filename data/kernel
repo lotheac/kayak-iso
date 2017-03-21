@@ -604,6 +604,7 @@
 0 /kernel/fs/amd64/dev
 0 /kernel/fs/amd64/procfs
 0 /kernel/fs/amd64/zfs
+0 /kernel/fs/amd64/fdfs
 0 /kernel/sys/amd64
 0 /kernel/sys/amd64/inst_sync
 0 /kernel/sys/amd64/nfs

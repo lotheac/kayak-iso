@@ -60,11 +60,15 @@
 0 /usr/lib/libncurses.so.6.0
 0 /usr/lib/amd64/libncurses.so.6
 0 /usr/lib/amd64/libncurses.so.6.0
+0 /usr/lib/libncurses.so.5
+0 /usr/lib/libncurses.so.5.9
+0 /usr/lib/amd64/libncurses.so.5
+0 /usr/lib/amd64/libncurses.so.5.9
 0 /usr/lib/lddstub
 0 /usr/lib/libidn.so.11
-0 /usr/lib/libidn.so.11.6.15
+0 /usr/lib/libidn.so.11.6.16
 0 /usr/lib/amd64/libidn.so.11
-0 /usr/lib/amd64/libidn.so.11.6.15
+0 /usr/lib/amd64/libidn.so.11.6.16
 0 /usr/bin/ldd
 0 /usr/bin/i86/truss
 0 /usr/bin/truss
@@ -72,3 +76,4 @@
 0 /usr/bin/md5sum
 0 /usr/gnu/bin/sha1sum
 0 /usr/bin/sha1sum
+0 /usr/sbin/shutdown

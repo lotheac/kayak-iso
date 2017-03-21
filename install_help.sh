@@ -121,11 +121,11 @@ BuildBE() {
   zfs set canmount=off $RPOOL/ROOT
   zfs set mountpoint=legacy $RPOOL/ROOT
   log "Receiving image: $MEDIA"
-  $GRAB $MEDIA | pv -B 128m -w 78 | $DECOMP | zfs receive -u $RPOOL/ROOT/omnios
-  zfs set canmount=noauto $RPOOL/ROOT/omnios
-  zfs set mountpoint=legacy $RPOOL/ROOT/omnios
+  $GRAB $MEDIA | pv -B 128m -w 78 | $DECOMP | zfs receive -u $RPOOL/ROOT/unleashed
+  zfs set canmount=noauto $RPOOL/ROOT/unleashed
+  zfs set mountpoint=legacy $RPOOL/ROOT/unleashed
   log "Cleaning up boot environment"
-  beadm mount omnios /mnt
+  beadm mount unleashed /mnt
   ALTROOT=/mnt
   cp $ALTROOT/lib/svc/seed/global.db $ALTROOT/etc/svc/repository.db
   chmod 0600 $ALTROOT/etc/svc/repository.db
@@ -134,7 +134,7 @@ BuildBE() {
   [[ -L $ALTROOT/dev/msglog ]] || \
     ln -s ../devices/pseudo/sysmsg@0:msglog $ALTROOT/dev/msglog
   MakeSwapDump
-  zfs destroy $RPOOL/ROOT/omnios@kayak
+  zfs destroy $RPOOL/ROOT/unleashed@kayak
 }
 
 FetchConfig(){
@@ -163,10 +163,10 @@ FetchConfig(){
 MakeBootable(){
   RPOOL=${1:-rpool}
   log "Making boot environment bootable"
-  zpool set bootfs=$RPOOL/ROOT/omnios rpool
+  zpool set bootfs=$RPOOL/ROOT/unleashed rpool
   # Must do beadm activate first on the off chance we're bootstrapping from
   # GRUB.
-  beadm activate omnios || return 1
+  beadm activate unleashed || return 1
 
   if [[ ! -z $1 ]]; then
       # Generate kayak-disk-list from zpool status.
@@ -203,7 +203,7 @@ AutoHostname() {
           /usr/bin/awk '/UP/{if($2 !~ /LOOPBACK/){iface=$1;}} /ether/{if(iface){print $2; exit;}}' | \
           /bin/tr '[:upper:]' '[:lower:]' | \
           /bin/sed -e 's/^/ 0/g;s/:/-0/g; s/0\([0-9a-f][0-9a-f]\)/\1/g; s/ //g;'`
-  [ -z $suffix ] && suffix=omnios
+  [ -z $suffix ] && suffix=unleashed
   [ "$suffix" == "-" ] && suffix= || suffix=-$suffix
   SetHostname $macadr$suffix
 }

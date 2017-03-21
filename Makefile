@@ -13,7 +13,7 @@
 # Copyright 2017 OmniTI Computer Consulting, Inc.  All rights reserved.
 #
 
-VERSION?=$(shell awk '$$1 == "OmniOS" { print $$3 }' /etc/release)
+VERSION?=$(shell awk '$$1 == "unleashed" { print $$2 }' /etc/release)
 BUILDSEND=rpool/kayak_image
 
 
@@ -127,9 +127,5 @@ install-web:	server-dirs $(WEB_FILES)
 takeover-console:	takeover-console.c
 	gcc -o takeover-console takeover-console.c
 
-install-iso:	takeover-console install-tftp install-web
-	BUILDSEND_MP=$(BUILDSEND_MP) VERSION=$(VERSION) ./build_iso.sh
-	cp /tmp/$(VERSION).iso $(BUILDSEND_MP)/$(VERSION).iso
-
-install-usb:	install-iso
-	./usbgen.sh $(BUILDSEND_MP)/$(VERSION).iso $(BUILDSEND_MP)/$(VERSION).usb-dd /tmp
+install-usb:	takeover-console $(BUILDSEND_MP)/miniroot.gz $(BUILDSEND_MP)/kayak_$(VERSION).zfs.bz2
+	BUILDSEND_MP=$(BUILDSEND_MP) VERSION=$(VERSION) ./build_usb.sh

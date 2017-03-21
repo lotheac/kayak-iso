@@ -51,11 +51,11 @@ klang=`grep -w $layout /usr/share/lib/keytables/type_$ktype/kbd_layouts | awk -F
 
 # Define the menu of commands and prompts
 menu_items=( \
-    (menu_str="Find disks, create rpool, and install OmniOS"		 \
+    (menu_str="Find disks, create rpool, and install unleashed"		 \
 	cmds=("/kayak/find-and-install.sh $klang")			 \
 	do_subprocess="true"						 \
 	msg_str="")							 \
-    (menu_str="Install OmniOS straight on to a preconfigured rpool"	 \
+    (menu_str="Install to a preconfigured rpool"	 \
 	cmds=("/kayak/rpool-install.sh rpool $klang")			 \
 	do_subprocess="true"						 \
 	msg_str="")							 \
@@ -158,7 +158,7 @@ for ((;;)) ; do
 	stty sane
 	clear
 	printf \
-	    "Welcome to the OmniOS installation menu"
+	    "Welcome to the unleashed installation menu"
 	print " \n\n"
 	for i in "${!menu_items[@]}"; do
 		print "\t$((${i} + 1))  ${menu_items[$i].menu_str}"

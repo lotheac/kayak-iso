@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+set -e
+
 #
 # This file and its contents are supplied under the terms of the
 # Common Development and Distribution License ("CDDL"), version 1.0.
@@ -16,7 +18,7 @@
 #
 
 #
-# Build an ISO installer using the Kayak tools.
+# Build a USB installer using the Kayak tools.
 #
 
 if [[ `id -u` != "0" ]]; then
@@ -30,8 +32,8 @@ if [[ -z $BUILDSEND_MP ]]; then
 fi
 
 if [[ -z $VERSION ]]; then
-	VERSION=`grep OmniOS $BUILDSEND_MP/root/etc/release | awk '{print $3}'`
-	echo "Using $VERSION..."
+        echo "\$VERSION not set" >&2
+        exit 1
 fi
 
 # Many of these depend on sufficient space in /tmp by default.  Please
@@ -42,12 +44,25 @@ KAYAK_ROOT=/tmp/miniroot.$$
 KR_FILE=/tmp/kr.$$
 MNT=/mnt
 UFS_LOFI=/tmp/boot_archive
-LOFI_SIZE=600M
-DST_ISO=/tmp/${VERSION}.iso
+LOFI_SIZE=2000M
+DST_IMG=${BUILDSEND_MP}/${VERSION}.img
 ZFS_IMG=$BUILDSEND_MP/*.bz2
 
+cleanup() {
+    echo "cleaning up"
+    set +e
+    umount $MNT 2>/dev/null
+    umount $KAYAK_ROOT 2>/dev/null
+    rm -rf $PROTO $UFS_LOFI $KR_FILE $KAYAK_ROOT
+    lofiadm -d $DST_IMG 2>/dev/null
+    lofiadm -d $LOFI_PATH 2>/dev/null
+    lofiadm -d $LOFI_RPATH 2>/dev/null
+    lofiadm -d $KR_FILE 2>/dev/null
+}
+trap cleanup 0 INT TERM
+
 # Create a UFS lofi file and mount the UFS filesystem in $MNT.  This will
-# form the boot_archive for the ISO.
+# form the boot_archive for the USB.
 mkfile $LOFI_SIZE $UFS_LOFI
 LOFI_PATH=`lofiadm -a $UFS_LOFI`
 echo 'y' | newfs $LOFI_PATH
@@ -55,7 +70,7 @@ mount $LOFI_PATH $MNT
 
 # Clone the already-created Kayak miniroot and copy it into both $MNT, and
 # into a now-created $PROTO. $PROTO will form the directory that gets
-# sprayed onto the ISO.
+# sprayed onto the USB.
 gunzip -c $KAYAK_ROOTBALL > $KR_FILE
 LOFI_RPATH=`lofiadm -a $KR_FILE`
 mkdir $KAYAK_ROOT
@@ -70,7 +85,7 @@ rm $KR_FILE
 
 #
 # Put additional goodies into the boot-archive on $MNT, which is
-# what'll be / (via ramdisk) once one boots the ISO.
+# what'll be / (via ramdisk) once one boots the USB.
 # 
 
 # The full ZFS image (also already-created) for actual installation.
@@ -102,7 +117,7 @@ chmod 0755 $MNT/lib/svc/method/console-login
 devfsadm -r $MNT
 
 #
-# The ISO's miniroot is going to be larger than the PXE miniroot.  To that
+# The USB's miniroot is going to be larger than the PXE miniroot.  To that
 # end, some files not listed in the exception list do need to show up on
 # the miniroot.  Use PREBUILT_ILLUMOS if available, or the current system
 # if not.
@@ -125,26 +140,55 @@ from_one_to_other usr/share/lib/keytables
 from_one_to_other usr/sbin ping
 from_one_to_other usr/bin netstat
 
-# Remind people this is the installer.
 cat <<EOF > $PROTO/boot/loader.conf.local
-loader_menu_title="Welcome to the OmniOS installer"
+loader_menu_title="Welcome to the unleashed installer"
 autoboot_delay=5
+console="ttya,text"
 EOF
 
 #
-# Okay, we've populated the new ISO miniroot.  Close it up and install it
-# on $PROTO as the boot archive.
+# Okay, we've populated the new miniroot.  Close it up and install it on $PROTO
+# as the boot archive.
 #
 umount $MNT
 lofiadm -d $LOFI_PATH
-cp $UFS_LOFI $PROTO/platform/i86pc/amd64/boot_archive
+gzip -c $UFS_LOFI > $PROTO/platform/i86pc/amd64/boot_archive
 digest -a sha1 $UFS_LOFI > $PROTO/platform/i86pc/amd64/boot_archive.hash
 rm -rf $PROTO/{usr,bin,sbin,lib,kernel}
-du -sh $PROTO/.
+protosize=$(du -sm $PROTO/.|cut -f1)
+imagesize=$((protosize * 11/10))
 
-# And finally, burn the ISO.
-mkisofs -o $DST_ISO -b boot/cdboot -c .catalog -no-emul-boot -boot-load-size 4 -boot-info-table -N -l -R -U -allow-multidot -no-iso-translate -cache-inodes -d -D -V OmniOS $PROTO
+rm -f "${DST_IMG}"
+mkfile -n ${imagesize}M "${DST_IMG}"
+devs="$(lofiadm -la "${DST_IMG}")"
+rdevs="${devs/dsk/rdsk}"
+s0devs="${devs/p0/s0}"
+rs0devs="${rdevs/p0/s0}"
+rs2devs="${rdevs/p0/s2}"
+fdisk -B "${rdevs}"
+prtvtoc "${rs2devs}" | nawk '
+/^[^\*]/ { r = $1; for(n = 1; n <= NF; n++) vtoc[r,n] = $n }
+END {
+vtoc[0,1] = 0;
+vtoc[0,2] = 2;
+vtoc[0,3] = 00;
+vtoc[0,4] = vtoc[8,6] + 1;
+vtoc[0,5] = vtoc[2,6] - vtoc[8,6];
+vtoc[0,6] = vtoc[2,6];
+printf("\t%d\t%d\t%02d\t%d\t%d\t%d\n",
+	vtoc[0,1], vtoc[0,2], vtoc[0,3], vtoc[0,4], vtoc[0,5], vtoc[0,6]);
+printf("\t%d\t%d\t%02d\t%d\t%d\t%d\n",
+	vtoc[2,1], vtoc[2,2], vtoc[2,3], vtoc[2,4], vtoc[2,5], vtoc[2,6]);
+printf("\t%d\t%d\t%02d\t%d\t%d\t%d\n",
+	vtoc[8,1], vtoc[8,2], vtoc[8,3], vtoc[8,4], vtoc[8,5], vtoc[8,6]);
+}' | fmthard -s- "${rs2devs}"
+# newfs doesn't ask questions if stdin isn't a tty.
+newfs "${rs0devs}" </dev/null
+mount -o nologging "${s0devs}" $MNT
+tar cf - -C $PROTO . | tar xf - -C $MNT
+installboot -mf "${MNT}/boot/pmbr" "${MNT}/boot/gptzfsboot" "${rs0devs}"
 
-rm -rf $PROTO $UFS_LOFI
-echo "$DST_ISO is ready"
-ls -lt $DST_ISO
+chmod 0444 $DST_IMG
+echo "$DST_IMG is ready"
+trap '' 0
+cleanup || true

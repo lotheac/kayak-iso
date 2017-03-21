@@ -29,11 +29,8 @@ fail() {
   exit 1
 }
 
-# NOTE --> The URL needs to be updated with every release.  
-# Change "bloody" to whatever release the current branch is.
-PUBLISHER=omnios
-OMNIOS_URL=http://pkg.omniti.com/omnios/bloody
-: ${PKGURL:=http://pkg.omniti.com/omnios/bloody}
+PUBLISHER=unleashed
+PKGURL=/ws/unleashed/packages/i386/nightly/repo.redist
 : ${BZIP2:=bzip2}
 ZROOT=rpool
 OUT=
@@ -50,6 +47,8 @@ do
     --) shift; break ;;
   esac
 done
+
+USERLAND_PACKAGES='gnu-tar bzip2 gzip xz ca-certificates autoconf automake automake-111 automake-115 gnu-make libtool makedepend pkgconf gdb gcc-49 flex swig git vim gnu-findutils libevent2 libidn nghttp2 pcre pkg openssh ntp bash pipe-viewer zsh system/mozilla-nss screen tmux gnu-grep gnu-patch less curl wget xproto'
 
 name=$1
 if [[ -z "$name" ]]; then
@@ -69,46 +68,10 @@ else
   zfs create $ZROOT/$name || fail "zfs create"
   MP=`zfs get -H mountpoint $ZROOT/$name | awk '{print $3}'`
   pkg image-create -F -p $PUBLISHER=$PKGURL $MP || fail "image-create"
-  # If r151006, use a specific version to avoid missing incorporation
-  if [[ "$name" == "r151006" ]]; then
-    entire_version="151006:20131210T224515Z"
-  else
-    entire_version=${name//r/}
-  fi
-  pkg -R $MP install entire@11-0.$entire_version openssh-server || fail "install entire"
+  pkg -R $MP set-publisher -p /ws/oi-userland/i386/repo
+  pkg -R $MP install osnet-redistributable developer/opensolaris/osnet $USERLAND_PACKAGES || fail 'install'
   zfs snapshot $ZROOT/$name@entire
 fi
-
-if [[ -n "$PROFILE" ]]; then
-  echo "Applying custom profile: $PROFILE"
-  [[ -r "$PROFILE" ]] || fail "Cannot find file: $PROFILE"
-  while read line ;
-  do
-    TMPPUB=`echo $line | cut -f1 -d=`
-    TMPURL=`echo $line | cut -f2 -d=`
-    if [[ -n "$TMPURL" && "$TMPURL" != "$TMPPUB" ]]; then
-      echo "Setting publisher: $TMPPUB / $TMPURL"
-      pkg -R $MP set-publisher -g $TMPURL $TMPPUB || fail "set publisher $TMPPUB"
-      PUBLISHER=$TMPPUB
-      PKGURL=$TMPURL
-    else
-      echo "Installing additional package: $line"
-      pkg -R $MP install -g $PKGURL $line || fail "install $line"
-    fi
-  done < <(grep . $PROFILE | grep -v '^ *#')
-fi
-
-if [[ -n "$PUBLISHER_OVERRIDE" ]]; then
-  OMNIOS_URL=$PKGURL
-fi
-echo "Setting omnios publisher to $OMNIOS_URL"
-pkg -R $MP unset-publisher omnios
-pkg -R $MP set-publisher -P --no-refresh -g $OMNIOS_URL omnios
-# Starting with r151014, require signatures for the omnios publisher.
-# NOTE:  Uncomment this line when you branch off a release.  "bloody" packages
-# are unsigned, but release ones are, and we should require checking their
-# signatures.
-#pkg -R $MP set-publisher --set-property signature-policy=require-signatures omnios
 
 zfs snapshot $ZROOT/$name@kayak || fail "snap"
 zfs send $ZROOT/$name@kayak | $BZIP2 -9 > $OUT || fail "send/compress"

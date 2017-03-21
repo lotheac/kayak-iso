@@ -8,8 +8,7 @@ bootfile="/boot/platform/i86pc/kernel/amd64/unix"
 # service host.
 boot-args="-B install_media=http://x.y.z.a/kayak/r151021-20170314.zfs.bz2,install_config=http://x.y.z.a/kayak"
 
-# Like the ISO, let people know we're in the PXE installer:
-loader_menu_title="Welcome to the OmniOS PXE Installer"
+loader_menu_title="unleashed installer"
 autoboot_delay=1
 
 # Make sure we're maxed out on TFTP block size.
