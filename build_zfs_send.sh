@@ -48,7 +48,7 @@ do
   esac
 done
 
-USERLAND_PACKAGES='gnu-tar bzip2 gzip xz ca-certificates autoconf automake automake-111 automake-115 gnu-make libtool makedepend pkgconf gdb gcc-49 flex swig git vim gnu-findutils libevent2 libidn nghttp2 pcre pkg openssh ntp bash pipe-viewer zsh system/mozilla-nss screen tmux gnu-grep gnu-patch less curl wget xproto'
+USERLAND_PACKAGES='gnu-tar bzip2 gzip xz ca-certificates autoconf automake automake-111 automake-115 gnu-make libtool makedepend pkgconf gdb gcc-49 flex swig git vim gnu-findutils libevent2 libidn nghttp2 pcre pkg openssh ntp bash pipe-viewer zsh system/mozilla-nss screen tmux gnu-grep gnu-patch less curl wget xproto setuptools'
 
 name=$1
 if [[ -z "$name" ]]; then
