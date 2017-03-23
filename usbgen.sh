@@ -28,6 +28,7 @@
 
 #
 # Generate USB image from iso
+# Originally from slim_install, modified by Toomas Soome.
 #
 
 # Solaris needs /usr/xpg4/bin/ because the tools in /usr/bin are not
