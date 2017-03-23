@@ -50,7 +50,7 @@ until [[ $finished == 1 ]]; do
 						  > /tmp/dp.$$
     cat /tmp/dp.$$
     echo ""
-    echo -n "Enter a digit ==> "
+    echo -n "Enter a digit or the disk device name ==> "
     read choice
 
     if [[ $choice == 9 ]]; then
@@ -73,7 +73,11 @@ until [[ $finished == 1 ]]; do
 	if [[ $choice == "" ]]; then
 	    continue
 	fi
-	NEWDISK=`grep -w $choice /tmp/dp.$$ | awk '{print $3}'`
+	NEWDISK=`nawk -v choice=$choice '$1 == choice {print $3}' < /tmp/dp.$$`
+	if [[ $NEWDISK == "" ]]; then
+	    NEWDISK=`nawk -v choice=$choice '$3 == choice {print $3}' < \
+		/tmp/dp.$$`
+	fi
 	if [[ $NEWDISK != "" ]]; then
 	    if [[ $DISKLIST == "" ]]; then
 		DISKLIST=$NEWDISK
