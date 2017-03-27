@@ -38,12 +38,13 @@ fi
 
 # Many of these depend on sufficient space in /tmp by default.  Please
 # modify as you deem appropriate.
-PROTO=/tmp/proto
+TMPDIR=${TMPDIR-/tmp}
+PROTO=${TMPDIR}/proto
 KAYAK_ROOTBALL=$BUILDSEND_MP/miniroot.gz
-KAYAK_ROOT=/tmp/miniroot.$$
-KR_FILE=/tmp/kr.$$
+KAYAK_ROOT=${TMPDIR}/miniroot.$$
+KR_FILE=${TMPDIR}/kr.$$
 MNT=/mnt
-UFS_LOFI=/tmp/boot_archive
+UFS_LOFI=${TMPDIR}/boot_archive
 LOFI_SIZE=2000M
 DST_IMG=${BUILDSEND_MP}/${VERSION}.img
 ZFS_IMG=$BUILDSEND_MP/kayak_${VERSION}.zfs.bz2
