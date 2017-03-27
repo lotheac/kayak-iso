@@ -24,7 +24,8 @@
 # Copyright 2017 OmniTI Computer Consulting, Inc. All rights reserved.
 #
 
-# This started its life as the Caiman text-installer menu.
+# This started its life as the Caiman text-installer menu, hence the old
+# OpenSolaris CDDL statement.
 
 # LOGNAME variable is needed to display the shell prompt appropriately
 export LOGNAME=root

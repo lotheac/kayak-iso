@@ -50,24 +50,17 @@ until [[ $finished == 1 ]]; do
 						  > /tmp/dp.$$
     cat /tmp/dp.$$
     echo ""
-    echo -n "Enter a digit ==> "
+    echo -n "Enter a digit or the disk device name ==> "
     read choice
 
     if [[ $choice == 9 ]]; then
 	DISKLIST=""
     elif [[ $choice == 8 ]]; then
-	###DEBUG
-	#echo -n "Old page $page, offset $offset... HIT RETURN!"
-	#read
-
 	page=$(($page + 1))
 	if [[ $page == $highpage ]]; then
 	    page=0
 	fi
 	offset=$(($page * $onepage + 2))
-	###DEBUG
-	#echo -n "New page $page, offset $offset... HIT RETURN!"
-	#read
     elif [[ $choice == 0 ]]; then
 	if [[ $DISKLIST == "" ]]; then
 	    echo -n "Press RETURN to go back to the main menu: "
@@ -80,7 +73,11 @@ until [[ $finished == 1 ]]; do
 	if [[ $choice == "" ]]; then
 	    continue
 	fi
-	NEWDISK=`grep -w $choice /tmp/dp.$$ | awk '{print $3}'`
+	NEWDISK=`nawk -v choice=$choice '$1 == choice {print $3}' < /tmp/dp.$$`
+	if [[ $NEWDISK == "" ]]; then
+	    NEWDISK=`nawk -v choice=$choice '$3 == choice {print $3}' < \
+		/tmp/dp.$$`
+	fi
 	if [[ $NEWDISK != "" ]]; then
 	    if [[ $DISKLIST == "" ]]; then
 		DISKLIST=$NEWDISK
@@ -122,9 +119,6 @@ until [[ $NEWRPOOL == "" ]]; do
     fi
 done
 
-###DEBUG
-#echo "Would do this:"
-#echo "    BuildRpool $DISKLIST"
 . /kayak/install_help.sh
 . /kayak/disk_help.sh
 BuildRpoolOnly $DISKLIST

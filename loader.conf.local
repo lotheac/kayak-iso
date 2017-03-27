@@ -14,7 +14,10 @@ autoboot_delay=1
 # Make sure we're maxed out on TFTP block size.
 tftp.blksize="1428"
 
+# Same with NFS if we use it. Optimize for NFS-in-UDP-in-PathMTU.
+nfs.read_size="1344"
+
 # Now the boot-archive in loader is different.  We don't need a .gz in
 # the filename because loader looks for <name>.gz.
 boot_archive_name="kayak/miniroot"
-boot_archive_hash_name="kayak/miniroot.gz.hash"
+boot_archive.hash_name="kayak/miniroot.gz.hash"

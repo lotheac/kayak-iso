@@ -46,7 +46,7 @@ MNT=/mnt
 UFS_LOFI=/tmp/boot_archive
 LOFI_SIZE=2000M
 DST_IMG=${BUILDSEND_MP}/${VERSION}.img
-ZFS_IMG=$BUILDSEND_MP/*.bz2
+ZFS_IMG=$BUILDSEND_MP/kayak_${VERSION}.zfs.bz2
 
 cleanup() {
     echo "cleaning up"
@@ -124,19 +124,22 @@ devfsadm -r $MNT
 #
 from_one_to_other() {
     dir=$1
-    shift
-    tar -cf - -C $ZIROOT/$dir ${@:-.} | tar -xf - -C $MNT/$dir
-}
+    if [[ -z $PREBUILT_ILLUMOS || ! -d $PREBUILT_ILLUMOS/proto/root_i386/$dir ]]
+    then
+	FROMDIR=/
+    else
+	FROMDIR=$PREBUILT_ILLUMOS/proto/root_i386
+    fi
 
-if [[ -z $PREBUILT_ILLUMOS ]]; then
-    ZIROOT=/
-else
-    ZIROOT=$PREBUILT_ILLUMOS/proto/root_i386
-fi
+    shift
+    tar -cf - -C $FROMDIR/$dir ${@:-.} | tar -xf - -C $MNT/$dir
+}
 
 # Add from_one_to_other for any directory {file|subdir file|subdir ...} you need
 from_one_to_other usr/share/lib/zoneinfo
 from_one_to_other usr/share/lib/keytables
+from_one_to_other usr/share/lib/terminfo
+from_one_to_other usr/gnu/share/terminfo
 from_one_to_other usr/sbin ping
 from_one_to_other usr/bin netstat
 

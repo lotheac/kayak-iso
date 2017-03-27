@@ -1,29 +1,20 @@
 #!/usr/bin/bash
+
 #
-# CDDL HEADER START
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
 #
-# The contents of this file are subject to the terms of the
-# Common Development and Distribution License, Version 1.0 only
-# (the "License").  You may not use this file except in compliance
-# with the License.
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.illumos.org/license/CDDL.
 #
-# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-# or http://www.opensolaris.org/os/licensing.
-# See the License for the specific language governing permissions
-# and limitations under the License.
-#
-# When distributing Covered Code, include this CDDL HEADER in each
-# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
-# If applicable, add the following below this CDDL HEADER, with the
-# fields enclosed by brackets "[]" replaced with your own identifying
-# information: Portions Copyright [yyyy] [name of copyright owner]
-#
-# CDDL HEADER END
-#
+
 #
 # Copyright 2017 OmniTI Computer Consulting, Inc.  All rights reserved.
-# Use is subject to license terms.
 #
+
 LOG_SETUP=0
 
 ConsoleLog(){
@@ -109,9 +100,9 @@ BuildBE() {
       DECOMP="bzip2 -dc"
       GRAB="curl -s"
   else
-      # ASSUME $2 is a file path.
+      # ASSUME $2 is a file path.  TODO: Parse the URL...
       MEDIA=$2
-      # XXX KEBE SAYS, make switch statement based on $MEDIA's extension.
+      # TODO: make switch statement based on $MEDIA's extension.
       # e.g. "bz2" ==> "bzip -dc", "7z" ==> 
       DECOMP="bzip2 -dc"
       GRAB=cat
@@ -220,6 +211,21 @@ SetLang()
   sed -i '' -e "s:^LANG=.*:LANG=${1}:" $ALTROOT/etc/default/init
 }
 
+SetKeyboardLayout()
+{
+      # Put the new keyboard layout ($1) in
+      # "setprop keyboard-layout <foo>" in the newly-installed root's
+      # /boot/solaris/bootenv.rc (aka. eeprom(1M) storage for amd64/i386).
+      layout=$1
+      sed "s/keyboard-layout Unknown/keyboard-layout $layout/g" \
+	  < $ALTROOT/boot/solaris/bootenv.rc > /tmp/bootenv.rc
+      mv /tmp/bootenv.rc $ALTROOT/boot/solaris/bootenv.rc
+      # Also modify the SMF manifest, assuming US-English was set by default.
+      sed "s/US-English/$layout/g" \
+	 < $ALTROOT/lib/svc/manifest/system/keymap.xml > /tmp/keymap.xml
+      cp -f /tmp/keymap.xml $ALTROOT/lib/svc/manifest/system/keymap.xml
+}
+
 ApplyChanges(){
   SetRootPW
   [[ -L $ALTROOT/etc/svc/profile/generic.xml ]] || \
@@ -245,19 +251,7 @@ ApplyChanges(){
 
   # arg4 == Keyboard layout
   if [[ ! -z $4 ]]; then
-      # Even though /etc/default/kbd is now defunct, we instead use it
-      # For now, use it as the channel from the main menu to here, the
-      # installer. Extract LAYOUT=<foo> and put it in
-      # "setprop keyboard-layout <foo>" in the newly-installed root's
-      # /boot/solaris/bootenv.rc (aka. eeprom(1M) storage for amd64/i386).
-      layout=$4
-      sed "s/keyboard-layout Unknown/keyboard-layout $layout/g" \
-	  < $ALTROOT/boot/solaris/bootenv.rc > /tmp/bootenv.rc
-      mv /tmp/bootenv.rc $ALTROOT/boot/solaris/bootenv.rc
-      # Also modify the SMF manifest, assuming US-English was set by default.
-      sed "s/US-English/$layout/g" \
-	 < $ALTROOT/lib/svc/manifest/system/keymap.xml > /tmp/keymap.xml
-      cp -f /tmp/keymap.xml $ALTROOT/lib/svc/manifest/system/keymap.xml
+      SetKeyboardLayout $4
   fi
 
   return 0
