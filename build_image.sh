@@ -23,8 +23,8 @@ fail() {
 # NOTE --> The URL needs to be updated with every release.
 # Change "bloody" to whatever release the current branch is.
 PUBLISHER=unleashed
-: ${PKGURL:=/ws/unleashed/packages/i386/nightly/repo.redist}
-USERLAND=/ws/oi-userland/i386/repo
+PKGURL=${PKGURL-/usr/nightly/packages/i386/nightly/repo.redist}
+USERLAND=${USERLAND-/ws/oi-userland/i386/repo}
 : ${GZIP_CMD:=gzip}
 SRCDIR=$(dirname $0)
 DIDWORK=0

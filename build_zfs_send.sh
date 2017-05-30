@@ -30,7 +30,7 @@ fail() {
 }
 
 PUBLISHER=unleashed
-PKGURL=/ws/unleashed/packages/i386/nightly/repo.redist
+PKGURL=${PKGURL-/usr/nightly/packages/i386/nightly/repo.redist}
 : ${BZIP2:=bzip2}
 ZROOT=rpool
 OUT=
