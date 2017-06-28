@@ -1382,6 +1382,7 @@
 20724775 /platform/i86pc/ucode
 20725685 /usr/bin/find
 20725823 /usr/bin/file
+20725823 /usr/bin/amd64/file
 20805662 /usr/sbin/mkfile
 20805895 /usr/sbin/lofiadm
 20805917 /etc/devname_check_RDONLY
@@ -1490,6 +1491,9 @@
 20872055 /usr/lib/libresolv.so.1
 20872055 /usr/lib/libresolv.so.2
 0 /usr/lib/libbz2.so.1
+0 /usr/lib/amd64/libmagic.so.1
+0 /usr/lib/amd64/libmagic.so.1.0.0
+0 /usr/share/misc/magic.mgc
 0 /usr/platform/i86pc/lib/fm/topo/plugins/pcibus.so
 0 /usr/platform/i86pc/lib/fm/topo/plugins/hostbridge.so
 0 /usr/platform/i86pc/lib/fm/topo/plugins/chip.so
