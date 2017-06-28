@@ -31,5 +31,6 @@ main(int argc, char *argv[])
 		(void) fcntl(0, F_DUP2FD, 1);
 		(void) fcntl(0, F_DUP2FD, 2);
 	}
+	setenv("TERM", "sun-color", 1);
 	execv(argv[1], &(argv[2]));
 }

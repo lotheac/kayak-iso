@@ -257,11 +257,6 @@ ApplyChanges(){
   return 0
 }
 
-Postboot() {
-  [[ -f $ALTROOT/.initialboot ]] || touch $ALTROOT/.initialboot
-  echo "$*" >> $ALTROOT/.initialboot
-}
-
 Reboot() {
   # This is an awful hack... we already setup bootadm
   # and we've likely deleted enough of the userspace that this

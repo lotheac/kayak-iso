@@ -282,8 +282,8 @@ step() {
 
 	${SVCCFG} -s 'system/boot-archive' setprop 'start/exec=:true'
 	${SVCCFG} -s 'system/manifest-import' setprop 'start/exec=:true'
-	${SVCCFG} -s "system/intrd:default" setprop "general/enabled=false"
-	${SVCCFG} -s "system/initial-boot" setprop "start/timeout_seconds=600"
+	${SVCCFG} -s 'system/console-login' setprop 'startd/need_session=true'
+	${SVCCFG} -s 'system/console-login' setprop 'start/exec="/kayak/takeover-console /kayak/kayak-menu.sh"'
 	echo " --- neutering the manifest import"
         echo "#!/bin/ksh" > ${ROOTDIR}/lib/svc/method/manifest-import
         echo "exit 0" >> ${ROOTDIR}/lib/svc/method/manifest-import
@@ -336,7 +336,6 @@ step() {
 	cp $SRCDIR/*.sh $WORKDIR/mnt/kayak/
 	chmod a+x $WORKDIR/mnt/kayak/*.sh
 
-	make_initial_boot $WORKDIR/mnt/.initialboot
 	if [[ -n "$DEBUG" ]]; then
 		cp $SRCDIR/anon.system $WORKDIR/mnt/etc/system
 		cp $SRCDIR/anon.dtrace.conf $WORKDIR/mnt/kernel/drv/dtrace.conf
@@ -359,14 +358,6 @@ step() {
 	;;
 
 	esac
-}
-
-make_initial_boot() {
-FILE=$1
-cat > $FILE <<EOF
-	/kayak/install_image.sh
-	exit \$?
-EOF
 }
 
 while [[ -n "$CHKPT" ]]; do
