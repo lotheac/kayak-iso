@@ -1129,6 +1129,7 @@
 20562966 /kayak
 20562966 /kayak/install_image.sh
 20562967 /usr/bin/bash
+20562967 /usr/bin/amd64/bash
 20562974 /lib/libdl.so.1
 20562997 /kayak/install_help.sh
 20563000 /kayak/net_help.sh
