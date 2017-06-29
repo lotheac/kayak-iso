@@ -132,7 +132,7 @@ from_one_to_other usr/bin netstat
 cat <<EOF > $PROTO/boot/loader.conf.local
 loader_menu_title="Welcome to the unleashed installer"
 autoboot_delay=5
-console="ttya,text"
+console="text,ttya"
 EOF
 
 #
